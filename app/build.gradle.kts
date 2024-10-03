@@ -2,6 +2,7 @@ import com.android.build.gradle.internal.api.ApkVariantOutputImpl
 import com.android.build.VariantOutput
 import org.apache.tools.ant.taskdefs.condition.Os
 import java.util.Locale
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 
 plugins {
     id("com.android.application")
@@ -16,7 +17,10 @@ val currentFlavor get() = gradle.startParameter.taskRequests.toString().let { ta
 }
 
 android {
-    val javaVersion = JavaVersion.VERSION_1_8
+    fun getLocalProperty(key: String) = gradleLocalProperties(rootDir).getProperty(key)
+    fun String?.toFile() = file(this!!)
+    val environment: Map<String, String> = System.getenv()
+    val javaVersion = JavaVersion.VERSION_11
     compileSdkVersion(30)
     compileOptions {
         sourceCompatibility = javaVersion
@@ -31,11 +35,23 @@ android {
         versionName = "5.20.1"
         testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
     }
+    signingConfigs {
+        create("AppSigningConfig") {
+            keyAlias = getLocalProperty("signing.keyAlias") ?: environment["SIGNING_KEY_ALIAS"] ?: error("Error!")
+            storeFile = (getLocalProperty("signing.storeFile") ?: environment["SIGNING_STORE_FILE"] ?: error("Error!")).toFile()
+            keyPassword = getLocalProperty("signing.keyPassword") ?: environment["SIGNING_KEY_PASSWORD"] ?: error("Error!")
+            storePassword = getLocalProperty("signing.storePassword") ?: environment["SIGNING_STORE_PASSWORD"] ?: error("Error!")
+            isV1SigningEnabled = true
+            isV2SigningEnabled = true
+        }
+    }
+
     buildTypes {
         getByName("release") {
             isShrinkResources = true
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs["AppSigningConfig"]
         }
     }
     splits {
