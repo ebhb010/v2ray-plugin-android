@@ -11,7 +11,13 @@ MIN_API="$1"
 ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 OUT_DIR="$ROOT/build/go"
 
+export GOPROXY=direct
+export GONOSUMDB=*
+
 cd "$ROOT/src/main/go/v2ray-plugin"
+
+go get
+
 BIN="libv2ray.so"
 for i in "${!ABIS[@]}"; do
     ABI="${ABIS[$i]}"
