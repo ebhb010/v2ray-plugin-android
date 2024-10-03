@@ -26,6 +26,7 @@ android {
         sourceCompatibility = javaVersion
         targetCompatibility = javaVersion
     }
+    ndkVersion = "27.0.12077973"
     kotlinOptions.jvmTarget = javaVersion.toString()
     defaultConfig {
         applicationId = "com.github.shadowsocks.plugin.v2ray"

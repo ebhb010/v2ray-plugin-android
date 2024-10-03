@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    tags:
+      - '**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      GZIP: -9
+      JVM_OPTS: -Xmx3500m
+      GRADLE_OPTS: -Dorg.gradle.workers.max=1 -Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy="in-process"
+      SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+      SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+      SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+      SIGNING_STORE_FILE: ${{ secrets.SIGNING_STORE_FILE }}
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - uses: nttld/setup-ndk@v1
+        id: ndk
+        with:
+          ndk-version: r27
+          link-to-sdk: true
+      - name: decode key
+        run: echo '${{ secrets.SIGNING_STORE_B6 }}' | base64 --decode > ${{ secrets.SIGNING_STORE_FILE }}
+      - name: build
+        run: ./gradlew assembleRelease
+      - name: release
+        uses: ncipollo/release-action@v1.14.0
+        with:
+          allowUpdates: true
+          artifacts: "app/build/outputs/apk/release/*.apk"
+          makeLatest: true
+          tag: ${{ github.ref_name }}
