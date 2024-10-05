@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
     <com.takisoft.preferencex.SimpleMenuPreference
         app:key="mode"
         app:persistent="false"
@@ -32,6 +33,16 @@
         app:persistent="false"
         app:title="Certificate for TLS verification"
         app:useSimpleSummaryProvider="true"/>
+    <SwitchPreference
+        app:defaultValue="false"
+        app:key="insecure"
+        app:title="Allow Insecure"
+        app:summary="Allow insecure cert, commonly self signed" />
+    <EditTextPreference
+        app:key="pinsha256"
+        android:inputType="textMultiLine"
+        android:minLines="3"
+        app:title="Pinned CertChain Sha256" />
     <PreferenceCategory
         app:title="Debug">
         <com.takisoft.preferencex.SimpleMenuPreference

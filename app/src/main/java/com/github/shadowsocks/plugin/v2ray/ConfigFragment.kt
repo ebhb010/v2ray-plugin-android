@@ -31,6 +31,7 @@ import androidx.preference.EditTextPreference
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.SwitchPreference
 import com.github.shadowsocks.plugin.PluginOptions
 import com.google.android.material.snackbar.Snackbar
 
@@ -46,6 +47,8 @@ class ConfigFragment : PreferenceFragmentCompat(), Preference.OnPreferenceChange
     private val mux by lazy { findPreference<EditTextPreference>("mux")!! }
     private val certRaw by lazy { findPreference<EditTextPreference>("certRaw")!! }
     private val loglevel by lazy { findPreference<ListPreference>("loglevel")!! }
+    private val insecure by lazy { findPreference<SwitchPreference>("insecure")!! }
+    private val pinnedsha256 by lazy {findPreference<EditTextPreference>("pinsha256")!! }
 
     private fun readMode(value: String = mode.value) = when (value) {
         "websocket-http" -> Pair(null, false)
@@ -69,6 +72,11 @@ class ConfigFragment : PreferenceFragmentCompat(), Preference.OnPreferenceChange
         putWithDefault("serviceName", serviceName.text, "")
         putWithDefault("certRaw", certRaw.text?.replace("\n", ""), "")
         putWithDefault("loglevel", loglevel.value, "warning")
+        val shas = if (!(pinnedsha256.text.isNullOrBlank() || pinnedsha256.text.isNullOrEmpty()))
+            pinnedsha256.text.trim().replace("\n\\s*\n".toRegex(),"").replace(System.lineSeparator(),"#") else ""
+        putWithDefault("pinnedsha256", shas, "")
+        if(insecure.isChecked) this["insecure"] = null
+        this["fastOpen"] = null
     }
 
     fun onInitializePluginOptions(options: PluginOptions) {
@@ -85,6 +93,9 @@ class ConfigFragment : PreferenceFragmentCompat(), Preference.OnPreferenceChange
         certRaw.text = options["certRaw"]
         serviceName.text = options["serviceName"]
         loglevel.value = options["loglevel"] ?: "warning"
+        pinnedsha256.text = if (!(options["pinnedsha256"].isNullOrBlank() || options["pinnedsha256"].isNullOrEmpty()))
+            options["pinnedsha256"]?.replace("#",System.lineSeparator()) else ""
+        insecure.isChecked = ("insecure" in options)
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -96,6 +107,16 @@ class ConfigFragment : PreferenceFragmentCompat(), Preference.OnPreferenceChange
             it.inputType = InputType.TYPE_CLASS_NUMBER
             it.filters = arrayOf(InputFilter.LengthFilter(4))
         }
+        pinnedsha256.summaryProvider =
+            Preference.SummaryProvider<EditTextPreference> { preference ->
+                val text = preference.text
+                if (text.isNullOrEmpty() || text.isBlank()) {
+                    "One fingerprint per line"
+                } else {
+                    val count = text.split(System.lineSeparator()).count()
+                    "Configured fp counts: $count"
+                }
+            }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -111,6 +132,8 @@ class ConfigFragment : PreferenceFragmentCompat(), Preference.OnPreferenceChange
         mux.isEnabled = mode == null
         serviceName.isEnabled = mode == "grpc"
         certRaw.isEnabled = mode != null || tls
+        insecure.isEnabled = mode != null || tls
+        pinnedsha256.isEnabled = mode != null || tls
         return true
     }
 

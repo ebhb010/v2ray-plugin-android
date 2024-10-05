@@ -32,8 +32,8 @@ android {
         applicationId = "com.github.shadowsocks.plugin.v2ray"
         minSdkVersion(23)
         targetSdkVersion(30)
-        versionCode = 5020200
-        versionName = "5.20.2"
+        versionCode = 5020300
+        versionName = "5.20.3"
         testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
     }
     val storefile = getLocalProperty("signing.storeFile") ?: environment["SIGNING_STORE_FILE"] ?: ""
