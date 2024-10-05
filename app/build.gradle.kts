@@ -36,14 +36,17 @@ android {
         versionName = "5.20.2"
         testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
     }
-    signingConfigs {
-        create("AppSigningConfig") {
-            keyAlias = getLocalProperty("signing.keyAlias") ?: environment["SIGNING_KEY_ALIAS"] ?: error("Error!")
-            storeFile = (getLocalProperty("signing.storeFile") ?: environment["SIGNING_STORE_FILE"] ?: error("Error!")).toFile()
-            keyPassword = getLocalProperty("signing.keyPassword") ?: environment["SIGNING_KEY_PASSWORD"] ?: error("Error!")
-            storePassword = getLocalProperty("signing.storePassword") ?: environment["SIGNING_STORE_PASSWORD"] ?: error("Error!")
-            isV1SigningEnabled = true
-            isV2SigningEnabled = true
+    val storefile = getLocalProperty("signing.storeFile") ?: environment["SIGNING_STORE_FILE"] ?: ""
+    if (storefile != ""){
+        signingConfigs {
+            create("AppSigningConfig") {
+                keyAlias = getLocalProperty("signing.keyAlias") ?: environment["SIGNING_KEY_ALIAS"] ?: error("?")
+                storeFile = storefile.toFile()
+                keyPassword = getLocalProperty("signing.keyPassword") ?: environment["SIGNING_KEY_PASSWORD"] ?: error("?")
+                storePassword = getLocalProperty("signing.storePassword") ?: environment["SIGNING_STORE_PASSWORD"] ?: error("?")
+                isV1SigningEnabled = true
+                isV2SigningEnabled = true
+            }
         }
     }
 
@@ -52,7 +55,9 @@ android {
             isShrinkResources = true
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs["AppSigningConfig"]
+            if (storefile != "") {
+                signingConfig = signingConfigs["AppSigningConfig"]
+            }
         }
     }
     splits {
