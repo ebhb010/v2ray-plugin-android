@@ -25,6 +25,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.InputFilter
 import android.text.InputType
+import android.util.Base64
 import android.view.View
 import androidx.core.view.updatePadding
 import androidx.preference.EditTextPreference
@@ -49,6 +50,8 @@ class ConfigFragment : PreferenceFragmentCompat(), Preference.OnPreferenceChange
     private val loglevel by lazy { findPreference<ListPreference>("loglevel")!! }
     private val insecure by lazy { findPreference<SwitchPreference>("insecure")!! }
     private val pinnedsha256 by lazy {findPreference<EditTextPreference>("pinsha256")!! }
+    private val useragent by lazy {findPreference<EditTextPreference>("useragent")!! }
+    private lateinit var uastore: String
 
     private fun readMode(value: String = mode.value) = when (value) {
         "websocket-http" -> Pair(null, false)
@@ -77,6 +80,7 @@ class ConfigFragment : PreferenceFragmentCompat(), Preference.OnPreferenceChange
         putWithDefault("pinnedsha256", shas, "")
         if(insecure.isChecked) this["insecure"] = null
         this["fastOpen"] = null
+        putWithDefault("useragent",uastore,"")
     }
 
     fun onInitializePluginOptions(options: PluginOptions) {
@@ -96,6 +100,8 @@ class ConfigFragment : PreferenceFragmentCompat(), Preference.OnPreferenceChange
         pinnedsha256.text = if (!(options["pinnedsha256"].isNullOrBlank() || options["pinnedsha256"].isNullOrEmpty()))
             options["pinnedsha256"]?.replace("#",System.lineSeparator()) else ""
         insecure.isChecked = ("insecure" in options)
+        uastore = options["useragent"] ?: ""
+        useragent.text = if (uastore.isNotEmpty()) Base64.decode(uastore,Base64.DEFAULT)?.decodeToString()?:"" else ""
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -117,6 +123,18 @@ class ConfigFragment : PreferenceFragmentCompat(), Preference.OnPreferenceChange
                     "Configured fp counts: $count"
                 }
             }
+        useragent.setOnPreferenceChangeListener(fun(_: Preference?, newValue: Any?): Boolean {
+            val nV = newValue as String?
+            if (!nV.isNullOrEmpty()) {
+                var t: ByteArray? = null
+                try {
+                    t = Base64.decode(nV.toByteArray(), Base64.DEFAULT)
+                } catch (_: IllegalArgumentException) {
+                }
+                uastore = (if(t!=null) nV else null) ?: Base64.encodeToString(nV.toByteArray(), Base64.NO_WRAP)
+            } else uastore = ""
+            return true
+        })
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
