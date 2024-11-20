@@ -46,6 +46,7 @@ class ConfigFragment : PreferenceFragmentCompat(), Preference.OnPreferenceChange
     private val path by lazy { findPreference<EditTextPreference>("path")!! }
     private val serviceName by lazy { findPreference<EditTextPreference>("serviceName")!! }
     private val mux by lazy { findPreference<EditTextPreference>("mux")!! }
+    private val bufsz by lazy { findPreference<EditTextPreference>("bufsz")!! }
     private val certRaw by lazy { findPreference<EditTextPreference>("certRaw")!! }
     private val loglevel by lazy { findPreference<ListPreference>("loglevel")!! }
     private val insecure by lazy { findPreference<SwitchPreference>("insecure")!! }
@@ -72,15 +73,17 @@ class ConfigFragment : PreferenceFragmentCompat(), Preference.OnPreferenceChange
         putWithDefault("host", host.text, "cloudfront.com")
         putWithDefault("path", path.text, "/")
         putWithDefault("mux", mux.text, "1")
+        if(!(bufsz.text.isNullOrBlank() || bufsz.text == "0")) putWithDefault("bufSize", bufsz.text, "0")
         putWithDefault("serviceName", serviceName.text, "")
         putWithDefault("certRaw", certRaw.text?.replace("\n", ""), "")
         putWithDefault("loglevel", loglevel.value, "warning")
-        val shas = if (!(pinnedsha256.text.isNullOrBlank() || pinnedsha256.text.isNullOrEmpty()))
+        val shas = if (!pinnedsha256.text.isNullOrBlank())
             pinnedsha256.text.trim().replace("\n\\s*\n".toRegex(),"").replace(System.lineSeparator(),"#") else ""
         putWithDefault("pinnedsha256", shas, "")
         if(insecure.isChecked) this["insecure"] = null
         this["fastOpen"] = null
         putWithDefault("useragent",uastore,"")
+        this["setPrior"] = null
     }
 
     fun onInitializePluginOptions(options: PluginOptions) {
@@ -94,6 +97,7 @@ class ConfigFragment : PreferenceFragmentCompat(), Preference.OnPreferenceChange
         host.text = options["host"] ?: "cloudfront.com"
         path.text = options["path"] ?: "/"
         mux.text = options["mux"] ?: "1"
+        bufsz.text = options["bufSize"] ?: "0"
         certRaw.text = options["certRaw"]
         serviceName.text = options["serviceName"]
         loglevel.value = options["loglevel"] ?: "warning"
@@ -112,6 +116,10 @@ class ConfigFragment : PreferenceFragmentCompat(), Preference.OnPreferenceChange
         mux.setOnBindEditTextListener {
             it.inputType = InputType.TYPE_CLASS_NUMBER
             it.filters = arrayOf(InputFilter.LengthFilter(4))
+        }
+        bufsz.setOnBindEditTextListener {
+            it.inputType = InputType.TYPE_CLASS_NUMBER
+            it.filters = arrayOf(InputFilter.LengthFilter(9))
         }
         pinnedsha256.summaryProvider =
             Preference.SummaryProvider<EditTextPreference> { preference ->

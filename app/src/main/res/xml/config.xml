@@ -29,6 +29,11 @@
         app:title="Concurrent connections"
         app:useSimpleSummaryProvider="true"/>
     <EditTextPreference
+        app:key="bufsz"
+        app:persistent="false"
+        app:title="Set rx/tx buffer size"
+        app:useSimpleSummaryProvider="true"/>
+    <EditTextPreference
         app:key="certRaw"
         app:persistent="false"
         app:title="Certificate for TLS verification"
