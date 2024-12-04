@@ -52,6 +52,8 @@ class ConfigFragment : PreferenceFragmentCompat(), Preference.OnPreferenceChange
     private val insecure by lazy { findPreference<SwitchPreference>("insecure")!! }
     private val pinnedsha256 by lazy {findPreference<EditTextPreference>("pinsha256")!! }
     private val useragent by lazy {findPreference<EditTextPreference>("useragent")!! }
+    private val v6first by lazy {findPreference<SwitchPreference>("v6first")!! }
+    private val v6force by lazy {findPreference<SwitchPreference>("v6force")!! }
     private lateinit var uastore: String
 
     private fun readMode(value: String = mode.value) = when (value) {
@@ -84,6 +86,8 @@ class ConfigFragment : PreferenceFragmentCompat(), Preference.OnPreferenceChange
         this["fastOpen"] = null
         putWithDefault("useragent",uastore,"")
         this["setPrior"] = null
+        if(v6first.isChecked) this["v6First"] = null
+        if(v6force.isChecked) this["v6Force"] = null
     }
 
     fun onInitializePluginOptions(options: PluginOptions) {
@@ -106,6 +110,8 @@ class ConfigFragment : PreferenceFragmentCompat(), Preference.OnPreferenceChange
         insecure.isChecked = ("insecure" in options)
         uastore = options["useragent"] ?: ""
         useragent.text = if (uastore.isNotEmpty()) Base64.decode(uastore,Base64.DEFAULT)?.decodeToString()?:"" else ""
+        v6first.isChecked = ("v6First" in options)
+        v6force.isChecked = ("v6Force" in options)
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {

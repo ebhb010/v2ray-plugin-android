@@ -53,6 +53,16 @@
         android:inputType="textMultiLine"
         android:minLines="3"
         app:title="Pinned CertChain Sha256" />
+    <SwitchPreference
+        app:defaultValue="false"
+        app:key="v6first"
+        app:title="IPV6 First"
+        app:summary="Resolve domain to ipv6 first" />
+    <SwitchPreference
+        app:defaultValue="false"
+        app:key="v6force"
+        app:title="Force prefer v6"
+        app:summary="Use ipv6 first even if no support" />
     <PreferenceCategory
         app:title="Debug">
         <com.takisoft.preferencex.SimpleMenuPreference
