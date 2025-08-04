@@ -30,7 +30,12 @@ jobs:
       - name: decode key
         run: echo '${{ secrets.SIGNING_STORE_B6 }}' | base64 --decode > ${{ secrets.SIGNING_STORE_FILE }}
       - name: build
-        run: ./gradlew assembleRelease
+        run: |
+           curl -L "https://cdn.azul.com/zulu/bin/zulu11.82.19-ca-jdk11.0.28-linux_x64.tar.gz" | tar -zx
+           mv zulu* myjdk
+           export PATH=$PWD/myjdk/bin:$PATH
+           export JAVA_HOME=$PWD/myjdk
+           ./gradlew assembleRelease
       - name: release
         uses: ncipollo/release-action@v1.14.0
         with:
