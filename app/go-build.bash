@@ -15,9 +15,9 @@ export GOPROXY=direct
 export GONOSUMDB=*
 
 pushd $HOME
-wget https://go.dev/dl/go1.23.4.linux-amd64.tar.gz
-tar -zxf go1.23.4.linux-amd64.tar.gz
-rm go1.23.4.linux-amd64.tar.gz
+wget https://go.dev/dl/go1.26.8.linux-amd64.tar.gz
+tar -zxf go1.26.8.linux-amd64.tar.gz
+rm go1.26.8.linux-amd64.tar.gz
 export PATH=$PWD/go/bin:$PATH
 popd
 hash -r
